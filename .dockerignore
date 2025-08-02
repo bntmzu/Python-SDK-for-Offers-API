@@ -31,7 +31,7 @@ coverage.xml
 
 # Environment variables and secrets
 .env
-.env.*
+#.env.*
 .envrc
 *.env
 .secrets
