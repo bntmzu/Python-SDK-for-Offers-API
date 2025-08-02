@@ -1,0 +1,93 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# Poetry / build artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+wheels/
+*.whl
+*.tar.gz
+.venv/
+.poetry/
+poetry.lock.bak
+
+# Test/output/cache
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.cache/*
+coverage.xml
+*.cover
+.hypothesis/
+
+# Environment variables and secrets
+.env
+.env.*
+.envrc
+*.env
+.secrets
+.secrets.*
+*.key
+*.pem
+*.p12
+*.pfx
+.pypirc
+
+# IDE/Editor/OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# OpenAPI client (generated)
+#src/offers_sdk/generated/
+
+# Jupyter/IPython
+*.ipynb_checkpoints/
+
+# Logs and debug files
+*.log
+logs/
+debug/
+*.debug
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# Documentation builds
+/docs
+docs/_build/
+docs/build/
+site/
+
+# Output examples and test scripts
+examples/output/
+examples/results/
+test_*.py
+temp_*.py
+debug_*.py
+
+# External generated SDK project (if present)
+python-exercise-client/
+
+# Git metadata
+.git
+.gitignore
+.gitattributes
