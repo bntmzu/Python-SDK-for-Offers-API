@@ -15,7 +15,7 @@ Typical use cases:
 """
 
 from typing import Protocol, Any, Dict
-from offers_sdk.generated.types import Response
+from offers_sdk.transport.base import UnifiedResponse
 
 
 class Middleware(Protocol):
@@ -46,7 +46,7 @@ class Middleware(Protocol):
             data (Any): Alternative body (e.g., for form-data)
         """
 
-    async def on_response(self, response: Response) -> None:
+    async def on_response(self, response: UnifiedResponse) -> None:
         """
         Called after the HTTP response is received (but before it's parsed).
 
@@ -57,5 +57,5 @@ class Middleware(Protocol):
         - Perform cache invalidation or alerts
 
         Args:
-            response (Response): Raw Response object from the generated API client
+            response (UnifiedResponse): Unified response object from transport layer
         """

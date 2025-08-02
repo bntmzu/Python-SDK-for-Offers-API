@@ -1,7 +1,7 @@
 import aiohttp
 from typing import Any, Dict, Optional
 
-from .base import BaseTransport
+from .base import BaseTransport, UnifiedResponse
 
 
 class AiohttpTransport(BaseTransport):
@@ -9,11 +9,9 @@ class AiohttpTransport(BaseTransport):
     Async transport implementation using aiohttp.ClientSession.
     """
 
-    def __init__(self, timeout: float = 10.0):
+    def __init__(self, timeout: float = 30.0):
         self._timeout = timeout
-        self._session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=timeout)
-        )
+        self._session = None
 
     async def request(
         self,
@@ -24,7 +22,13 @@ class AiohttpTransport(BaseTransport):
         json: Any = None,
         data: Any = None,
         timeout: Optional[float] = None,
-    ) -> aiohttp.ClientResponse:
+    ) -> UnifiedResponse:
+        # Create session if not exists
+        if self._session is None:
+            self._session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=self._timeout)
+            )
+
         async with self._session.request(
             method=method,
             url=url,
@@ -34,7 +38,7 @@ class AiohttpTransport(BaseTransport):
             data=data,
             timeout=timeout or self._timeout,
         ) as response:
-            return response
+            return UnifiedResponse(response)
 
     async def close(self):
         await self._session.close()

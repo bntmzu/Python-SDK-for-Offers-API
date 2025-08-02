@@ -1,7 +1,7 @@
 import httpx
 from typing import Any, Dict, Optional
 
-from .base import BaseTransport
+from .base import BaseTransport, UnifiedResponse
 
 
 class HttpxTransport(BaseTransport):
@@ -9,7 +9,7 @@ class HttpxTransport(BaseTransport):
     Async transport implementation using httpx.AsyncClient.
     """
 
-    def __init__(self, timeout: float = 10.0):
+    def __init__(self, timeout: float = 30.0):
         self._timeout = timeout
         self._client = httpx.AsyncClient(timeout=self._timeout)
 
@@ -22,7 +22,7 @@ class HttpxTransport(BaseTransport):
         json: Any = None,
         data: Any = None,
         timeout: Optional[float] = None,
-    ) -> httpx.Response:
+    ) -> UnifiedResponse:
         response = await self._client.request(
             method=method,
             url=url,
@@ -32,7 +32,7 @@ class HttpxTransport(BaseTransport):
             data=data,
             timeout=timeout or self._timeout,
         )
-        return response
+        return UnifiedResponse(response)
 
     async def close(self):
         await self._client.aclose()

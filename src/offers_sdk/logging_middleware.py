@@ -1,6 +1,6 @@
 import logging
 import time
-from offers_sdk.generated.types import Response
+from offers_sdk.transport.base import UnifiedResponse
 
 logger = logging.getLogger("offers_sdk.middleware.logging")
 
@@ -28,7 +28,7 @@ class LoggingMiddleware:
             f"Request: {method} {url} | headers={headers} | params={params} | json={json} | data={data}"
         )
 
-    async def on_response(self, response: Response):
+    async def on_response(self, response: UnifiedResponse):
         elapsed = (time.monotonic() - self._start_time) if self._start_time else None
         logger.info(
             f"Response: {response.status_code}"
