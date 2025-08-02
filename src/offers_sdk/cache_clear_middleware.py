@@ -44,5 +44,8 @@ class CacheClearMiddleware:
             product_id = getattr(response.parsed, "id", None)
             if product_id:
                 key = f"offers:{product_id}"
-                await caches.get("default").delete(key)
+                try:
+                    await caches.get("default").delete(key)
+                except Exception as e:
+                    logger.error(f"Failed to delete cache for {key}: {e}")
                 logger.info(f"Cache invalidated for key: {key}")
