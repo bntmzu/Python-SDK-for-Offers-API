@@ -1,6 +1,6 @@
 # Offers SDK
 
-[SDK DEMO]!(https://media1.tenor.com/m/_HFVnb507sgAAAAC/viva-pinata-hudson-horstachio.gif)
+![SDK DEMO](https://media1.tenor.com/m/_HFVnb507sgAAAAC/viva-pinata-hudson-horstachio.gif)
 
 Async-first Python SDK for the Offers API with comprehensive features including automatic authentication, multiple HTTP transports, middleware support, plugin architecture, and caching.
 
