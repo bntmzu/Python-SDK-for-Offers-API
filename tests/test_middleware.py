@@ -8,6 +8,7 @@ from offers_sdk.generated.models import RegisterProductRequest, RegisterProductR
 from offers_sdk.generated.types import Response
 from offers_sdk.generated.api.default import register_product_api_v1_products_register_post
 from offers_sdk.logging_middleware import LoggingMiddleware
+from offers_sdk.cache_clear_middleware import CacheClearMiddleware
 from offers_sdk.middleware import Middleware
 
 
@@ -122,3 +123,62 @@ async def test_logging_middleware_logs(caplog: pytest.LogCaptureFixture):
     assert "Request: GET https://api.test/test" in logs
     assert "Response: 200" in logs
     assert "elapsed=" in logs
+
+@pytest.mark.asyncio
+async def test_logging_and_cache_clear_middleware(monkeypatch: pytest.MonkeyPatch,
+                                                  settings: OffersAPISettings,
+                                                  caplog: pytest.LogCaptureFixture):
+    """
+    Test that both LoggingMiddleware and CacheClearMiddleware are invoked correctly.
+    LoggingMiddleware should log request/response.
+    CacheClearMiddleware should remove the cached offer by product_id.
+    """
+    # Prepare product and cache
+    product_id = "test-mw-combo"
+    cache_key = f"offers:{product_id}"
+    from aiocache import caches
+    cache = caches.get("default")
+    await cache.set(cache_key, "cached_offer", ttl=60)
+
+    # Init middlewares
+    log_mw = LoggingMiddleware()
+    clear_mw = CacheClearMiddleware()
+    caplog.set_level(logging.INFO, logger="offers_sdk.middleware.logging")
+
+    client = OffersClient(settings, middlewares=[log_mw, clear_mw])
+
+    async def _fake_get_access_token() -> str:
+        return "tok"
+
+    monkeypatch.setattr(client.auth, "get_access_token", _fake_get_access_token)
+
+    # Stub register_product response
+    async def _fake_register(*_args, **_kwargs):
+        return Response(
+            status_code=HTTPStatus.CREATED,
+            content=b"",
+            headers={},
+            parsed=RegisterProductResponse(id=product_id),
+        )
+
+    monkeypatch.setattr(
+        register_product_api_v1_products_register_post,
+        "asyncio_detailed",
+        _fake_register,
+    )
+
+    # Run the call
+    req = RegisterProductRequest(id=product_id, name="MW test", description="...")
+    result = await client.register_product(req)
+
+    # Assert product registered
+    assert result.id == product_id
+
+    # Assert log middleware triggered
+    logs = caplog.text
+    assert f"Request: POST" in logs
+    assert f"Response: 201" in logs
+    assert "elapsed=" in logs
+
+    # Assert cache was cleared
+    assert await cache.get(cache_key) is None

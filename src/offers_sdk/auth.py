@@ -1,22 +1,22 @@
 """
-auth_manager.py
+This module provides an asynchronous AuthManager class responsible for:
+- securely handling OAuth2 token refresh
+- retrying transient failures (with exponential backoff)
+- managing token expiration and reuse.
 
-Provides an asynchronous AuthManager for handling OAuth token refresh with retry logic,
-suitable for use with the Offers API SDK. Automatically obtains and refreshes access tokens
-using a provided refresh token and manages their expiration.
-
-Requirements:
-    - tenacity for retry logic
-    - offers_sdk (generated OpenAPI client)
-    - OffersAPISettings (configuration class)
+Although it uses a generated OpenAPI client under the hood, this logic wraps it in a robust, SDK-friendly way.
 """
 
+import logging
+
+logger = logging.getLogger("offers_sdk.auth")
+logger.setLevel(logging.DEBUG)
+
 import time
+import httpx
 from offers_sdk.config import OffersAPISettings
+from offers_sdk.token_store import TokenStore
 from typing import Optional
-from offers_sdk.generated.models import AuthResponse
-from offers_sdk.generated.api.default import auth_api_v1_auth_post
-from offers_sdk.generated.client import AuthenticatedClient
 from tenacity import (
     AsyncRetrying,
     stop_after_attempt,
@@ -54,6 +54,7 @@ class AuthManager:
         self,
         settings: OffersAPISettings,
         retry_attempts: int = 3,
+        token_store: Optional[TokenStore] = None,
     ):
         """
         Initializes the AuthManager.
@@ -68,6 +69,7 @@ class AuthManager:
         self._access_token: Optional[str] = None
         self._token_expiry: float = 0
         self._retry_attempts = retry_attempts
+        self.token_store = token_store
 
     @property
     def access_token(self) -> str:
@@ -98,52 +100,71 @@ class AuthManager:
 
     async def get_access_token(self) -> str:
         """
-        Ensures a valid access token is available and returns it.
-
-        If the current token is missing or expired, a new token will be fetched.
-
-        Returns:
-            str: The valid access token.
-
-        Raises:
-            AuthError: If unable to refresh the token.
+        Returns a valid access token. Refreshes it only if it's expired or missing.
         """
-        if not self._access_token or self.is_token_expired():
-            await self.refresh_access_token()
-        return self._access_token
+        # First try to load from cache
+        if not self._access_token and self.token_store:
+            logger.debug("Attempting to load token from cache...")
+            token_data = await self.token_store.load()
+            if token_data:
+                logger.debug(
+                    f"Loaded cached token (exp: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(token_data['expires_at']))})"
+                )
+                self._access_token = token_data["access_token"]
+                self._token_expiry = token_data["expires_at"]
 
-    async def refresh_access_token(self):
-        """
-        Fetches a new access token using the refresh token.
+        # Check if we have a valid token
+        if self._access_token and not self.is_token_expired():
+            logger.debug("Using valid token from memory")
+            return self._access_token
 
-        Uses exponential backoff and retries for transient errors.
+        # Only if token is missing or expired, get a new one
+        logger.debug("No valid token. Refreshing...")
+        return await self._refresh_access_token_unconditionally()
 
-        Raises:
-            AuthError: If the refresh token is invalid or all retries fail.
-        """
-        # Use tenacity for retrying transient failures
+    async def _refresh_access_token_unconditionally(self) -> str:
+        if not self.refresh_token or not self.refresh_token.strip():
+            raise AuthError("Refresh token is missing or empty")
+
         async for attempt in AsyncRetrying(
             stop=stop_after_attempt(self._retry_attempts),
             wait=wait_exponential(multiplier=0.5, min=1, max=5),
             retry=retry_if_exception_type(Exception),
         ):
-            client = AuthenticatedClient(
-                base_url=self.base_url,
-            )
-            # The following call must be compatible with the OpenAPI async client
-            response = await auth_api_v1_auth_post.asyncio_detailed(
-                client=client, bearer=self.refresh_token
-            )
-            if response.status_code == 201:
-                data: AuthResponse = response.parsed
-                self._access_token = data.access_token
-                self._token_expiry = (
-                    time.time() + 5 * 60
-                )  # Token is valid for 5 minutes
-                return
-            elif response.status_code == 401:
-                raise AuthError("Bad refresh token")
-            else:
-                raise AuthError(f"Auth error: {response.status_code}")
-        # If all attempts fail, raise an AuthError
-        raise AuthError("Failed to get access token after retries")
+            with attempt:
+                async with httpx.AsyncClient(
+                    base_url=self.base_url, timeout=30.0
+                ) as async_client:
+                    response = await async_client.post(
+                        "/api/v1/auth",
+                        headers={"Bearer": self.refresh_token},
+                    )
+
+                    if response.status_code == 201:
+                        data = await response.json()
+                        self._access_token = data["access_token"]
+                        self._token_expiry = time.time() + 5 * 60
+                        logger.debug(
+                            f"New access token acquired (expires in 5 minutes)"
+                        )
+                        if self.token_store:
+                            try:
+                                await self.token_store.save(
+                                    self._access_token, self._token_expiry
+                                )
+                                logger.debug("💾 Token saved to cache.")
+                            except Exception as e:
+                                logger.warning(f"Failed to save token: {e}")
+                        return self._access_token
+                    elif response.status_code == 401:
+                        logger.error("Refresh token is invalid.")
+                        raise AuthError("Bad refresh token")
+                    else:
+                        logger.error(
+                            f"Auth error: {response.status_code} — {response.text}"
+                        )
+                        raise AuthError(
+                            f"Auth error: {response.status_code}: {response.text}"
+                        )
+
+                raise AuthError("Failed to get access token after retries")
