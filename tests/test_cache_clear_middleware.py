@@ -1,190 +1,203 @@
 import pytest
 import logging
-from http import HTTPStatus
 from aiocache import caches
 from offers_sdk.cache_clear_middleware import CacheClearMiddleware
-from offers_sdk.generated.models import RegisterProductResponse
-from offers_sdk.generated.types import Response
+from offers_sdk.transport.base import UnifiedResponse
+
+
+class MockResponse:
+    """Mock response for testing."""
+    
+    def __init__(self, status_code, json_data=None, text="", url=""):
+        self.status_code = status_code
+        self.text = text
+        self._json_data = json_data or {}
+        self._url = url
+        
+    async def json(self):
+        return self._json_data
 
 
 @pytest.mark.asyncio
 async def test_cache_clear_middleware_deletes_correct_key():
     """
-    GIVEN a cached offer for a product_id
-    WHEN register_product returns 201 Created
-    THEN CacheClearMiddleware should delete the corresponding cache entry
+    Test that CacheClearMiddleware deletes the correct cache key
+    when a product is successfully registered.
     """
-    # Setup: create cache and set key
-    product_id = "test-product-123"
-    cache_key = f"offers:{product_id}"
+    # Setup cache with test data
     cache = caches.get("default")
-    await cache.set(cache_key, "cached data", ttl=60)
-    assert await cache.get(cache_key) == "cached data"
-
-    # Create a fake successful response from register_product
-    response = Response(
-        status_code=HTTPStatus.CREATED,
-        content=b"",
-        headers={},
-        parsed=RegisterProductResponse(id=product_id),
-    )
-
-    # Act: pass response to middleware
+    await cache.set("offers:test-product", "cached data")
+    
+    # Verify data exists
+    value = await cache.get("offers:test-product")
+    assert value == "cached data"
+    
+    # Create middleware
     middleware = CacheClearMiddleware()
-    await middleware.on_response(response)
-
-    # Assert: cache entry is deleted
-    value = await cache.get(cache_key)
+    
+    # Create mock response for successful registration
+    mock_response = MockResponse(201, {"id": "test-product"}, url="/api/v1/products/register")
+    unified_response = UnifiedResponse(mock_response)
+    
+    # Simulate successful registration
+    await middleware.on_response(unified_response)
+    
+    # Verify cache was cleared
+    value = await cache.get("offers:test-product")
     assert value is None
+
 
 @pytest.mark.asyncio
 async def test_cache_clear_middleware_does_not_clear_on_non_201():
     """
-    GIVEN a response with status != 201
-    WHEN on_response is called
-    THEN the cache should not be touched
+    Test that CacheClearMiddleware does not clear cache
+    when response status is not 201.
     """
-    product_id = "non-201-product"
-    key = f"offers:{product_id}"
+    # Setup cache with test data
     cache = caches.get("default")
-    await cache.set(key, "data", ttl=60)
-
-    response = Response(
-        status_code=HTTPStatus.BAD_REQUEST,
-        content=b"",
-        headers={},
-        parsed=RegisterProductResponse(id=product_id),
-    )
-
+    await cache.set("offers:test-product", "cached data")
+    
+    # Create middleware
     middleware = CacheClearMiddleware()
-    await middleware.on_response(response)
+    
+    # Create mock response for non-201 status
+    mock_response = MockResponse(200, {"id": "test-product"}, url="/api/v1/products/register")
+    unified_response = UnifiedResponse(mock_response)
+    
+    # Simulate non-201 response
+    await middleware.on_response(unified_response)
+    
+    # Verify cache was not cleared
+    value = await cache.get("offers:test-product")
+    assert value == "cached data"
 
-    assert await cache.get(key) == "data"
-    await cache.delete(key)
 
 @pytest.mark.asyncio
 async def test_cache_clear_middleware_skips_if_parsed_is_none():
     """
-    GIVEN a response with status 201 but no parsed data
-    WHEN on_response is called
-    THEN cache should not be cleared
+    Test that CacheClearMiddleware skips cache clearing
+    when response JSON parsing fails.
     """
+    # Setup cache with test data
     cache = caches.get("default")
-    await cache.set("offers:xyz", "something", ttl=60)
-
-    response = Response(
-        status_code=HTTPStatus.CREATED,
-        content=b"",
-        headers={},
-        parsed=None,
-    )
-
+    await cache.set("offers:test-product", "cached data")
+    
+    # Create middleware
     middleware = CacheClearMiddleware()
-    await middleware.on_response(response)
-
-    assert await cache.get("offers:xyz") == "something"
-    await cache.delete("offers:xyz")
-
-class FakeParsed:
-    def __init__(self):
-        self.id = None  # no product_id
+    
+    # Create mock response with None JSON data
+    mock_response = MockResponse(201, None, url="/api/v1/products/register")
+    unified_response = UnifiedResponse(mock_response)
+    
+    # Simulate response with None JSON
+    await middleware.on_response(unified_response)
+    
+    # Verify cache was not cleared
+    value = await cache.get("offers:test-product")
+    assert value == "cached data"
 
 
 @pytest.mark.asyncio
 async def test_cache_clear_middleware_skips_if_no_id():
     """
-    GIVEN a response with parsed object but no ID
-    WHEN on_response is called
-    THEN cache should not be cleared
+    Test that CacheClearMiddleware skips cache clearing
+    when response does not contain product ID.
     """
+    # Setup cache with test data
     cache = caches.get("default")
-    await cache.set("offers:none", "something", ttl=60)
-
-    response = Response(
-        status_code=HTTPStatus.CREATED,
-        content=b"",
-        headers={},
-        parsed=FakeParsed(),
-    )
-
+    await cache.set("offers:test-product", "cached data")
+    
+    # Create middleware
     middleware = CacheClearMiddleware()
-    await middleware.on_response(response)
+    
+    # Create mock response without product ID
+    mock_response = MockResponse(201, {"name": "test-product"}, url="/api/v1/products/register")
+    unified_response = UnifiedResponse(mock_response)
+    
+    # Simulate response without product ID
+    await middleware.on_response(unified_response)
+    
+    # Verify cache was not cleared
+    value = await cache.get("offers:test-product")
+    assert value == "cached data"
 
-    assert await cache.get("offers:none") == "something"
-    await cache.delete("offers:none")
 
 @pytest.mark.asyncio
-async def test_cache_clear_skips_on_409(monkeypatch):
+async def test_cache_clear_skips_on_409():
     """
-    GIVEN a 409 Conflict response (product already exists)
-    WHEN on_response is called
-    THEN cache should not be cleared
+    Test that CacheClearMiddleware does not clear cache
+    when response status is 409 (Conflict).
     """
-    mw = CacheClearMiddleware()
-    from aiocache import caches
+    # Setup cache with test data
     cache = caches.get("default")
-    await cache.set("offers:prod-409", "keep", ttl=60)
+    await cache.set("offers:test-product", "cached data")
+    
+    # Create middleware
+    middleware = CacheClearMiddleware()
+    
+    # Create mock response for 409 status
+    mock_response = MockResponse(409, {"id": "test-product"}, url="/api/v1/products/register")
+    unified_response = UnifiedResponse(mock_response)
+    
+    # Simulate 409 response
+    await middleware.on_response(unified_response)
+    
+    # Verify cache was not cleared
+    value = await cache.get("offers:test-product")
+    assert value == "cached data"
 
-    response = Response(
-        status_code=HTTPStatus.CONFLICT,
-        content=b"",
-        headers={},
-        parsed=RegisterProductResponse(id="prod-409"),
-    )
-
-    await mw.on_response(response)
-
-    value = await cache.get("offers:prod-409")
-    assert value == "keep"
 
 @pytest.mark.asyncio
-async def test_cache_clear_ignores_non_201_status(monkeypatch):
+async def test_cache_clear_ignores_non_201_status():
     """
-    GIVEN a 200 OK response
-    WHEN on_response is called
-    THEN middleware should skip cache deletion
+    Test that CacheClearMiddleware ignores all non-201 status codes.
     """
-    mw = CacheClearMiddleware()
-    from aiocache import caches
+    # Setup cache with test data
     cache = caches.get("default")
-    await cache.set("offers:prod-200", "keep", ttl=60)
+    await cache.set("offers:test-product", "cached data")
+    
+    # Create middleware
+    middleware = CacheClearMiddleware()
+    
+    # Test various non-201 status codes
+    for status_code in [200, 400, 401, 403, 404, 409, 422, 500]:
+        mock_response = MockResponse(status_code, {"id": "test-product"}, url="/api/v1/products/register")
+        unified_response = UnifiedResponse(mock_response)
+        
+        await middleware.on_response(unified_response)
+        
+        # Verify cache was not cleared
+        value = await cache.get("offers:test-product")
+        assert value == "cached data"
 
-    response = Response(
-        status_code=HTTPStatus.OK,
-        content=b"",
-        headers={},
-        parsed=RegisterProductResponse(id="prod-200"),
-    )
-
-    await mw.on_response(response)
-
-    value = await cache.get("offers:prod-200")
-    assert value == "keep"
 
 @pytest.mark.asyncio
-async def test_cache_clear_handles_deletion_error(monkeypatch, caplog):
+async def test_cache_clear_handles_deletion_error(caplog):
     """
-    GIVEN a cache backend that raises an error on delete
-    WHEN on_response is called
-    THEN middleware logs the error but does not crash
+    Test that CacheClearMiddleware handles cache deletion errors gracefully.
     """
-    mw = CacheClearMiddleware()
-
-    async def failing_delete(*_args, **_kwargs):
-        raise Exception("boom")
-
-    from aiocache import caches
-    monkeypatch.setattr(caches.get("default"), "delete", failing_delete)
-
-    caplog.set_level(logging.ERROR, logger="offers_sdk.middleware.cache_clear")
-
-    response = Response(
-        status_code=HTTPStatus.CREATED,
-        content=b"",
-        headers={},
-        parsed=RegisterProductResponse(id="prod-error"),
-    )
-
-    await mw.on_response(response)
-
+    # Setup logging
+    caplog.set_level(logging.ERROR)
+    
+    # Setup cache with test data
+    cache = caches.get("default")
+    await cache.set("offers:test-product", "cached data")
+    
+    # Create middleware with mock cache that raises exception
+    middleware = CacheClearMiddleware()
+    
+    # Mock the cache delete method to raise an exception
+    async def failing_delete(key):
+        raise Exception("Cache deletion failed")
+    
+    middleware._cache.delete = failing_delete
+    
+    # Create mock response for successful registration
+    mock_response = MockResponse(201, {"id": "test-product"}, url="/api/v1/products/register")
+    unified_response = UnifiedResponse(mock_response)
+    
+    # Simulate successful registration with failing cache
+    await middleware.on_response(unified_response)
+    
+    # Verify error was logged
     assert "Failed to delete cache" in caplog.text
