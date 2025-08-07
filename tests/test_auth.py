@@ -1,11 +1,13 @@
-import pytest
-from offers_sdk.auth import AuthManager
-from offers_sdk.config import OffersAPISettings
-from offers_sdk.client import OffersClient
-from offers_sdk.generated.models import RegisterProductRequest
-from unittest.mock import AsyncMock, patch
-
 import time
+from unittest.mock import AsyncMock
+from unittest.mock import patch
+
+import pytest
+
+from offers_sdk.auth import AuthManager
+from offers_sdk.client import OffersClient
+from offers_sdk.config import OffersAPISettings
+from offers_sdk.generated.models import RegisterProductRequest
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,9 @@
-import httpx
-from typing import Any, Dict, Optional
+from typing import Any
 
-from .base import BaseTransport, UnifiedResponse
+import httpx
+
+from .base import BaseTransport
+from .base import UnifiedResponse
 
 
 class HttpxTransport(BaseTransport):
@@ -17,11 +19,11 @@ class HttpxTransport(BaseTransport):
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> UnifiedResponse:
         response = await self._client.request(
             method=method,

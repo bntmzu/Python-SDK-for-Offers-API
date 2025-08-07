@@ -8,17 +8,19 @@ This module tests how plugins integrate with the main OffersClient including:
 - Error handling in plugin integration
 """
 
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+
 from offers_sdk.client import OffersClient
-from offers_sdk.generated.models import RegisterProductRequest
-from offers_sdk.plugins.examples import (
-    LoggingPlugin,
-    AuthenticationPlugin,
-    MetricsPlugin,
-)
-from offers_sdk.transport.base import UnifiedResponse
 from offers_sdk.config import OffersAPISettings
+from offers_sdk.generated.models import RegisterProductRequest
+from offers_sdk.plugins.examples import AuthenticationPlugin
+from offers_sdk.plugins.examples import LoggingPlugin
+from offers_sdk.plugins.examples import MetricsPlugin
+from offers_sdk.transport.base import UnifiedResponse
 from tests.fakes import MockTransport
 
 

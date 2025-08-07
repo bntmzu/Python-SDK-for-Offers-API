@@ -16,42 +16,37 @@ Features include:
 
 Example usage:
     from offers_sdk import OffersClient, OffersAPISettings
-    
+
     settings = OffersAPISettings(refresh_token="your-token")
     client = OffersClient(settings)
-    
+
     # Register a product
     product = RegisterProductRequest(name="Test", description="Description")
     result = await client.register_product(product)
-    
+
     # Get offers with caching
     offers = await client.get_offers_cached("product-id")
-    
+
     await client.aclose()
 """
 
 import logging
 
-from offers_sdk.token_store import FileTokenStore
-from tenacity import (
-    AsyncRetrying,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type,
-)
+from tenacity import AsyncRetrying
+from tenacity import retry_if_exception_type
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
 
-from offers_sdk.middleware import Middleware
 from offers_sdk.auth import AuthManager
 from offers_sdk.config import OffersAPISettings
 from offers_sdk.exceptions import OffersAPIError
+from offers_sdk.generated.models import OfferResponse
+from offers_sdk.generated.models import RegisterProductRequest
+from offers_sdk.generated.models import RegisterProductResponse
+from offers_sdk.middleware import Middleware
+from offers_sdk.token_store import FileTokenStore
 from offers_sdk.transport import get_transport
 from offers_sdk.transport.httpx import HttpxTransport
-from offers_sdk.generated.models import (
-    RegisterProductRequest,
-    RegisterProductResponse,
-    OfferResponse,
-)
-
 
 logger = logging.getLogger("offers_sdk.cache")
 

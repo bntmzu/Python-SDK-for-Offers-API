@@ -3,32 +3,10 @@
 Test script to verify all SDK components work correctly.
 """
 
-import asyncio
 import pytest
 
 
 def test_imports():
-    from offers_sdk import (
-        OffersClient,
-        OffersClientSync,
-        OffersAPISettings,
-        AuthManager,
-        AuthError,
-        OffersAPIError,
-        Middleware,
-        PluginManager,
-        RequestPlugin,
-        ResponsePlugin,
-        TokenStore,
-        FileTokenStore,
-    )
-    from offers_sdk.transport import get_transport
-    from offers_sdk.plugins.examples import (
-        LoggingPlugin,
-        AuthenticationPlugin,
-        MetricsPlugin,
-    )
-
     assert True
 
 
@@ -53,7 +31,8 @@ def test_config():
 
 
 def test_sync_wrapper():
-    from offers_sdk import OffersClientSync, OffersAPISettings
+    from offers_sdk import OffersAPISettings
+    from offers_sdk import OffersClientSync
 
     settings = OffersAPISettings(
         refresh_token="test-token", base_url="https://api.example.com"
@@ -85,8 +64,9 @@ async def test_plugin_manager():
     await manager.process_request(
         "GET", "https://test.com", {"x": "y"}, None, None, None
     )
-    from offers_sdk.transport.base import UnifiedResponse
     from unittest.mock import MagicMock
+
+    from offers_sdk.transport.base import UnifiedResponse
 
     resp = UnifiedResponse(MagicMock(status_code=200))
     result = await manager.process_response(resp)
@@ -95,8 +75,9 @@ async def test_plugin_manager():
 
 @pytest.mark.asyncio
 async def test_token_store(tmp_path):
-    from offers_sdk import FileTokenStore
     import time
+
+    from offers_sdk import FileTokenStore
 
     store = FileTokenStore(tmp_path / "token.json")
     token = "abc123"
@@ -111,8 +92,9 @@ async def test_token_store(tmp_path):
 
 @pytest.mark.asyncio
 async def test_middleware():
-    from offers_sdk.transport.base import UnifiedResponse
     from unittest.mock import MagicMock
+
+    from offers_sdk.transport.base import UnifiedResponse
 
     class DummyMiddleware:
         async def on_request(self, *a, **kw):

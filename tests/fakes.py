@@ -1,4 +1,5 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 from offers_sdk.transport.base import UnifiedResponse
 

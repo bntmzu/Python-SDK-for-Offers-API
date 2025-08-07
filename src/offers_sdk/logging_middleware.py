@@ -1,5 +1,6 @@
 import logging
 import time
+
 from offers_sdk.transport.base import UnifiedResponse
 
 logger = logging.getLogger("offers_sdk.middleware.logging")

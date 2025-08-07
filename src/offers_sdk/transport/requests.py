@@ -1,8 +1,10 @@
 import asyncio
-import requests
-from typing import Any, Dict, Optional
+from typing import Any
 
-from .base import BaseTransport, UnifiedResponse
+import requests
+
+from .base import BaseTransport
+from .base import UnifiedResponse
 
 
 class RequestsTransport(BaseTransport):
@@ -24,11 +26,11 @@ class RequestsTransport(BaseTransport):
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> UnifiedResponse:
         """
         Async wrapper around synchronous requests.
@@ -38,17 +40,19 @@ class RequestsTransport(BaseTransport):
         """
         # Run sync requests in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None,
-            self._session.request,
-            method,
-            url,
-            headers or {},
-            params or {},
-            json,
-            data,
-            timeout or self._timeout,
-        )
+
+        def make_request() -> requests.Response:
+            return self._session.request(
+                method=method,
+                url=url,
+                headers=headers or {},
+                params=params or {},
+                json=json,
+                data=data,
+                timeout=timeout or self._timeout,
+            )
+
+        response = await loop.run_in_executor(None, make_request)
         return UnifiedResponse(response)
 
     async def close(self):

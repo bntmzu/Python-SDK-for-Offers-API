@@ -12,10 +12,12 @@ This module tests the middleware system including:
 import logging
 import time
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
-from httpx import Request, Response
+from httpx import Request
+from httpx import Response
 
 from offers_sdk.cache_clear_middleware import CacheClearMiddleware
 from offers_sdk.config import OffersAPISettings

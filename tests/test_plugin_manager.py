@@ -13,7 +13,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from offers_sdk.plugins import PluginManager, RequestPlugin, ResponsePlugin
+from offers_sdk.plugins import PluginManager
+from offers_sdk.plugins import RequestPlugin
+from offers_sdk.plugins import ResponsePlugin
 from offers_sdk.transport.base import UnifiedResponse
 
 

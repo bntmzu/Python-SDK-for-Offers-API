@@ -14,7 +14,9 @@ Typical use cases:
 - Cache invalidation (e.g., CacheClearMiddleware)
 """
 
-from typing import Protocol, Any, Dict
+from typing import Any
+from typing import Protocol
+
 from offers_sdk.transport.base import UnifiedResponse
 
 
@@ -23,8 +25,8 @@ class Middleware(Protocol):
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Dict[str, Any] | None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None,
         json: Any,
         data: Any,
     ) -> None:

@@ -12,10 +12,11 @@ Author: Offers SDK Team
 Version: 1.0.0
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
-from uuid import uuid4
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+
+import pytest
 
 from offers_sdk.client import OffersClient
 from offers_sdk.config import OffersAPISettings
@@ -479,7 +480,7 @@ async def test_get_offers_cached():
 
     # Second call - should use cache (but aiocache serializes objects)
     # So we need to check that the API is not called again
-    result2 = await client.get_offers_cached("test-product")
+    await client.get_offers_cached("test-product")
     assert call_counter["count"] == 1  # API should not be called again
 
 

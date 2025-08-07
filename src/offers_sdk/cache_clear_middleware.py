@@ -8,7 +8,9 @@ this middleware deletes the cached offers for that product_id.
 
 import logging
 from http import HTTPStatus
+
 from aiocache import caches
+
 from offers_sdk.transport.base import UnifiedResponse
 
 logger = logging.getLogger("offers_sdk.middleware.cache")

@@ -37,11 +37,45 @@ pytest = "^8.4"
 pytest-asyncio = "^1.1"
 pytest-cov = "^6.2"
 mypy = "^1.10"
-#ruff = "^0.4"
+ruff = "^0.3"
+isort = "^5.13"
 black = "^24.4"
 openapi-python-client = "^0.19.0"
 pre-commit = "^3.7.1"
 types-requests = "^2.32.0.20240602"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"src/offers_sdk/generated/**" = ["UP006", "UP007", "UP035", "I001"]  # Ignore generated files
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["offers_sdk"]
+force_single_line = true
+skip = ["src/offers_sdk/generated/**"]
+
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

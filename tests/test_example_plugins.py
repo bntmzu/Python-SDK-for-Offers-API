@@ -9,17 +9,16 @@ This module tests the behavior of example plugins including:
 - MetricsPlugin
 """
 
-import pytest
 import logging
 from unittest.mock import MagicMock
 
-from offers_sdk.plugins.examples import (
-    LoggingPlugin,
-    RetryPlugin,
-    RateLimitPlugin,
-    AuthenticationPlugin,
-    MetricsPlugin,
-)
+import pytest
+
+from offers_sdk.plugins.examples import AuthenticationPlugin
+from offers_sdk.plugins.examples import LoggingPlugin
+from offers_sdk.plugins.examples import MetricsPlugin
+from offers_sdk.plugins.examples import RateLimitPlugin
+from offers_sdk.plugins.examples import RetryPlugin
 from offers_sdk.transport.base import UnifiedResponse
 
 

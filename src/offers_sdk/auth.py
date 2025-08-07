@@ -8,21 +8,19 @@ Although it uses a generated OpenAPI client under the hood, this logic wraps it 
 """
 
 import logging
+import time
+
+import httpx
+from tenacity import AsyncRetrying
+from tenacity import retry_if_exception_type
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
+
+from offers_sdk.config import OffersAPISettings
+from offers_sdk.token_store import TokenStore
 
 logger = logging.getLogger("offers_sdk.auth")
 logger.setLevel(logging.DEBUG)
-
-import time
-import httpx
-from offers_sdk.config import OffersAPISettings
-from offers_sdk.token_store import TokenStore
-from typing import Optional
-from tenacity import (
-    AsyncRetrying,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type,
-)
 
 # settings = OffersAPISettings()
 
@@ -54,7 +52,7 @@ class AuthManager:
         self,
         settings: OffersAPISettings,
         retry_attempts: int = 3,
-        token_store: Optional[TokenStore] = None,
+        token_store: TokenStore | None = None,
     ):
         """
         Initializes the AuthManager.
@@ -66,7 +64,7 @@ class AuthManager:
         self.settings = settings
         self.refresh_token = settings.refresh_token
         self.base_url = settings.base_url
-        self._access_token: Optional[str] = None
+        self._access_token: str | None = None
         self._token_expiry: float = 0
         self._retry_attempts = retry_attempts
         self.token_store = token_store
@@ -144,9 +142,7 @@ class AuthManager:
                         data = await response.json()
                         self._access_token = data["access_token"]
                         self._token_expiry = time.time() + 5 * 60
-                        logger.debug(
-                            f"New access token acquired (expires in 5 minutes)"
-                        )
+                        logger.debug("New access token acquired (expires in 5 minutes)")
                         if self.token_store:
                             try:
                                 await self.token_store.save(
@@ -168,5 +164,5 @@ class AuthManager:
                         )
 
                 raise AuthError("Failed to get access token after retries")
-        
+
         raise AuthError("Failed to get access token after retries")

@@ -1,6 +1,8 @@
-import pytest
 import logging
+
+import pytest
 from aiocache import caches
+
 from offers_sdk.cache_clear_middleware import CacheClearMiddleware
 from offers_sdk.transport.base import UnifiedResponse
 

@@ -1,7 +1,9 @@
-import aiohttp
-from typing import Any, Dict, Optional
+from typing import Any
 
-from .base import BaseTransport, UnifiedResponse
+import aiohttp
+
+from .base import BaseTransport
+from .base import UnifiedResponse
 
 
 class AiohttpTransport(BaseTransport):
@@ -11,17 +13,17 @@ class AiohttpTransport(BaseTransport):
 
     def __init__(self, timeout: float = 30.0):
         self._timeout = timeout
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
     async def request(
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> UnifiedResponse:
         # Create session if not exists
         if self._session is None:

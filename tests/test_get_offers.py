@@ -8,8 +8,10 @@ isolated testing of the business logic without external dependencies.
 
 """
 
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 from offers_sdk.client import OffersClient
 from offers_sdk.config import OffersAPISettings

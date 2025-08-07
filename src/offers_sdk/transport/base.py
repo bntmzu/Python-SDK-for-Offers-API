@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class UnifiedResponse:
@@ -43,11 +43,11 @@ class BaseTransport:
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> UnifiedResponse:
         """
         Async request method for all transports.
