@@ -20,19 +20,19 @@ def get_transport(name: str, timeout: float = 10.0):
             from .aiohttp import AiohttpTransport
 
             return AiohttpTransport(timeout)
-        except ImportError:
+        except ImportError as err:
             raise ImportError(
                 "aiohttp transport requires aiohttp package. Install with: poetry install --extras aiohttp"
-            )
+            ) from err
     elif name == "requests":
         try:
             from .requests import RequestsTransport
 
             return RequestsTransport(timeout)
-        except ImportError:
+        except ImportError as err:
             raise ImportError(
                 "requests transport requires requests package. Install with: poetry install --extras requests"
-            )
+            ) from err
     else:
         raise ValueError(
             f"Unknown transport: {name}. Available: httpx, aiohttp, requests"

@@ -5,8 +5,10 @@ This module provides a plugin system that allows developers to extend
 the SDK's functionality with custom request/response processing.
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from abc import ABC
+from abc import abstractmethod
+from typing import Any
+from typing import Optional
 
 from ..transport.base import UnifiedResponse
 
@@ -23,11 +25,11 @@ class RequestPlugin(ABC):
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-    ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+    ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
         """
         Process a request before it is sent.
 
@@ -97,11 +99,11 @@ class PluginManager:
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-    ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+    ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
         """
         Process request through all request plugins.
         """

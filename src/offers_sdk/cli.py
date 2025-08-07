@@ -5,12 +5,13 @@ import sys
 from pathlib import Path
 
 import click
+
+from offers_sdk.cache_clear_middleware import CacheClearMiddleware
 from offers_sdk.client import OffersClient
 from offers_sdk.config import OffersAPISettings
 from offers_sdk.generated.models import RegisterProductRequest
-from offers_sdk.token_store import FileTokenStore
 from offers_sdk.logging_middleware import LoggingMiddleware
-from offers_sdk.cache_clear_middleware import CacheClearMiddleware
+from offers_sdk.token_store import FileTokenStore
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
@@ -154,9 +155,10 @@ def clear_cache():
 @cli.command()
 def debug_token():
     """Diagnose the current access token (from cache file)."""
-    from datetime import datetime
-    from offers_sdk.config import OffersAPISettings
     import json
+    from datetime import datetime
+
+    from offers_sdk.config import OffersAPISettings
 
     settings = OffersAPISettings()
     path = settings.token_cache_path

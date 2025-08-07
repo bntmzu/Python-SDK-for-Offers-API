@@ -6,15 +6,12 @@ to support users who need sync operations.
 """
 
 import asyncio
-from typing import List, Optional
 
 from .client import OffersClient
 from .config import OffersAPISettings
-from .generated.models import (
-    RegisterProductRequest,
-    RegisterProductResponse,
-    OfferResponse,
-)
+from .generated.models import OfferResponse
+from .generated.models import RegisterProductRequest
+from .generated.models import RegisterProductResponse
 
 
 class OffersClientSync:
@@ -33,9 +30,9 @@ class OffersClientSync:
     def __init__(
         self,
         settings: OffersAPISettings,
-        transport_name: Optional[str] = None,
+        transport_name: str | None = None,
         retry_attempts: int = 3,
-        offers_cache_ttl: Optional[int] = None,
+        offers_cache_ttl: int | None = None,
     ):
         """
         Initialize the synchronous client.
@@ -70,7 +67,7 @@ class OffersClientSync:
         """
         return asyncio.run(self._async_client.register_product(product))
 
-    def get_offers(self, product_id: str) -> List[OfferResponse]:
+    def get_offers(self, product_id: str) -> list[OfferResponse]:
         """
         Synchronous offers retrieval.
 
@@ -85,7 +82,7 @@ class OffersClientSync:
         """
         return asyncio.run(self._async_client.get_offers(product_id))
 
-    def get_offers_cached(self, product_id: str) -> List[OfferResponse]:
+    def get_offers_cached(self, product_id: str) -> list[OfferResponse]:
         """
         Synchronous cached offers retrieval.
 

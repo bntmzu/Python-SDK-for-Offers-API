@@ -1,11 +1,13 @@
-import pytest
-from offers_sdk.auth import AuthManager
-from offers_sdk.config import OffersAPISettings
-from offers_sdk.client import OffersClient
-from offers_sdk.generated.models import RegisterProductRequest
-from unittest.mock import AsyncMock, patch
-
 import time
+from unittest.mock import AsyncMock
+from unittest.mock import patch
+
+import pytest
+
+from offers_sdk.auth import AuthManager
+from offers_sdk.client import OffersClient
+from offers_sdk.config import OffersAPISettings
+from offers_sdk.generated.models import RegisterProductRequest
 
 
 @pytest.mark.asyncio
@@ -18,7 +20,7 @@ async def test_get_access_token_from_valid_cache():
     # given: mock cache with valid token
     mock_token_data = {
         "access_token": "valid-token-123",
-        "expires_at": time.time() + 300  # 5 minutes from now
+        "expires_at": time.time() + 300,  # 5 minutes from now
     }
 
     mock_token_store = AsyncMock()
@@ -48,14 +50,11 @@ async def test_expired_token_triggers_refresh():
     # given: expired token in cache
     expired_token_data = {
         "access_token": "expired-token-123",
-        "expires_at": time.time() - 300  # 5 minutes ago
+        "expires_at": time.time() - 300,  # 5 minutes ago
     }
 
     # new token that should be returned from API
-    new_token_data = {
-        "access_token": "new-token-456",
-        "expires_at": time.time() + 300
-    }
+    new_token_data = {"access_token": "new-token-456", "expires_at": time.time() + 300}
 
     mock_token_store = AsyncMock()
     mock_token_store.load.return_value = expired_token_data
@@ -94,21 +93,23 @@ class DummyTransport:
     async def request(self, method, url, headers=None, json=None):
         self.call_count += 1
         if self.call_count == 1:
-            # Сначала вернуть 401
+
             class Response:
                 status_code = 401
                 text = "Unauthorized"
 
                 def json(self):
                     return {}
+
             return Response()
         else:
-            # Потом — успех
+
             class Response:
                 status_code = 201
 
                 def json(self):
                     return {"id": json["id"]}
+
             return Response()
 
 
@@ -157,7 +158,7 @@ async def test_register_product_retry_on_401():
 
     req = RegisterProductRequest(id="xyz", name="Test", description="Desc")
     result = await client.register_product(req)
-    
+
     assert result.id == "xyz"
     assert mock_transport.request.call_count == 2
     assert mock_auth.get_access_token.call_count == 2

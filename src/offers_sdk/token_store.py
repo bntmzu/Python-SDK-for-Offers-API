@@ -1,10 +1,9 @@
 # token_store.py
 
 import json
-import time
 import logging
+import time
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger("offers_sdk.token_store")
 
@@ -12,7 +11,7 @@ logger = logging.getLogger("offers_sdk.token_store")
 class TokenStore:
     """Abstract interface for token storage."""
 
-    async def load(self) -> Optional[dict]:
+    async def load(self) -> dict | None:
         raise NotImplementedError
 
     async def save(self, access_token: str, expires_at: float):
@@ -28,13 +27,13 @@ class FileTokenStore(TokenStore):
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
-    async def load(self) -> Optional[dict]:
+    async def load(self) -> dict | None:
         logger.debug(f"Attempting to load token from: {self.path}")
         if not self.path.exists():
             logger.debug("Token cache file does not exist")
             return None
         try:
-            data = json.loads(self.path.read_text())
+            data: dict = json.loads(self.path.read_text())
             if "access_token" in data and "expires_at" in data:
                 if time.time() < data["expires_at"]:
                     logger.debug("Valid cached token found")

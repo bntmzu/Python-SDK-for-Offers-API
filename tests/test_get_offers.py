@@ -8,15 +8,14 @@ isolated testing of the business logic without external dependencies.
 
 """
 
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock
-from uuid import uuid4
 
 from offers_sdk.client import OffersClient
 from offers_sdk.config import OffersAPISettings
 from offers_sdk.exceptions import OffersAPIError
-from offers_sdk.generated.models import RegisterProductRequest
 from offers_sdk.transport.base import UnifiedResponse
 
 

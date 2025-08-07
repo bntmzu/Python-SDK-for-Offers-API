@@ -1,4 +1,6 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+
 from offers_sdk.transport.base import UnifiedResponse
 
 
@@ -40,11 +42,11 @@ class MockTransport:
         self,
         method: str,
         url: str,
-        headers: dict = None,
-        params: dict = None,
-        json: dict = None,
-        data: dict = None,
-        timeout: float = None,
+        headers: dict | None = None,
+        params: dict | None = None,
+        json: dict | None = None,
+        data: dict | None = None,
+        timeout: float | None = None,
     ) -> UnifiedResponse:
         """Mock request method."""
         self.request_calls.append(

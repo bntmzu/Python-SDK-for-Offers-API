@@ -1,5 +1,3 @@
-import os
-import pytest
 from offers_sdk.config import OffersAPISettings
 
 

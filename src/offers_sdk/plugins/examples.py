@@ -7,10 +7,11 @@ the SDK's functionality with custom request/response processing.
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
-from . import RequestPlugin, ResponsePlugin
 from ..transport.base import UnifiedResponse
+from . import RequestPlugin
+from . import ResponsePlugin
 
 logger = logging.getLogger(__name__)
 
@@ -22,17 +23,17 @@ class LoggingPlugin(RequestPlugin, ResponsePlugin):
 
     def __init__(self, log_level: int = logging.INFO):
         self.log_level = log_level
-        self._start_time = None
+        self._start_time: float | None = None
 
     async def process_request(
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-    ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+    ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
         """Log request details."""
         self._start_time = time.monotonic()
         logger.log(
@@ -67,11 +68,11 @@ class RetryPlugin(RequestPlugin):
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-    ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+    ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
         """Add retry headers to request."""
         headers["X-Retry-Count"] = "0"
         headers["X-Max-Retries"] = str(self.max_retries)
@@ -85,7 +86,7 @@ class RateLimitPlugin(ResponsePlugin):
 
     def __init__(self, requests_per_minute: int = 60):
         self.requests_per_minute = requests_per_minute
-        self._last_request_time = 0
+        self._last_request_time: float = 0.0
 
     async def process_response(self, response: UnifiedResponse) -> UnifiedResponse:
         """Handle rate limiting based on response headers."""
@@ -110,11 +111,11 @@ class AuthenticationPlugin(RequestPlugin):
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-    ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+    ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
         """Add custom authentication headers."""
         headers["X-API-Key"] = self.api_key
         headers["X-Client-Version"] = "1.0.0"
@@ -127,9 +128,9 @@ class MetricsPlugin(ResponsePlugin):
     """
 
     def __init__(self):
-        self.request_count = 0
-        self.error_count = 0
-        self.total_response_time = 0
+        self.request_count: int = 0
+        self.error_count: int = 0
+        self.total_response_time: float = 0.0
 
     async def process_response(self, response: UnifiedResponse) -> UnifiedResponse:
         """Collect metrics from response."""

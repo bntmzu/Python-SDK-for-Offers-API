@@ -3,7 +3,7 @@ Custom exceptions for the Offers SDK.
 Provides meaningful error classes for client consumers.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 
 class OffersAPIError(Exception):
@@ -15,6 +15,6 @@ class OffersAPIError(Exception):
         details (Any | None): Optional structured details (e.g., validation errors).
     """
 
-    def __init__(self, message: str, details: Optional[Any] = None):
+    def __init__(self, message: str, details: Any | None = None):
         super().__init__(message)
         self.details = details

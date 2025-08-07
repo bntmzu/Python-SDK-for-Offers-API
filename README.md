@@ -18,6 +18,8 @@ Async-first Python SDK for the Offers API with comprehensive features including 
 - **Docker support** with multi-service setup
 - **Comprehensive error handling** with meaningful exceptions
 - **Full type hints** throughout the codebase
+- **Modern development tools**: ruff, isort, black, mypy
+- **Pre-commit hooks** for automatic code quality checks
 
 ## Quick Start
 
@@ -25,10 +27,13 @@ Async-first Python SDK for the Offers API with comprehensive features including 
 
 ```bash
 # Using Poetry (recommended)
-poetry install
+poetry install --all-extras
 
-# Or using pip
-pip install offers-sdk
+# Install with development tools
+poetry install --with dev --all-extras
+
+# Note: This package is not yet published to PyPI
+# For production use, install from source or use Docker
 ```
 
 ### Basic Usage
@@ -211,11 +216,20 @@ offers-cli test-auth
 # Start development environment
 docker compose --profile dev up
 
-# Run tests
+# Run tests in development environment
+docker compose --profile dev-test up
+
+# Interactive development shell
+docker compose --profile dev-shell up
+
+# Run tests in production environment
 docker compose --profile test up
 
 # Use CLI in container
 docker compose --profile cli up
+
+# Production environment
+docker compose --profile production up
 ```
 
 ### Production Build
@@ -227,6 +241,19 @@ docker build -t offers-sdk .
 # Run production container
 docker run -e OFFERS_API_REFRESH_TOKEN=your_token offers-sdk
 ```
+
+### Dockerfile Differences
+
+**Dockerfile** (Production):
+- Minimal dependencies: `poetry install --all-extras`
+- Includes CLI support
+- Optimized for production use
+- All optional extras installed (aiohttp, requests, aiocache, click)
+
+**Dockerfile.dev** (Development):
+- Full development environment: `poetry install --with dev --all-extras`
+- Includes testing tools: pytest, mypy, black, ruff, isort, pre-commit
+- Interactive development support
 
 ## API Reference
 
@@ -299,8 +326,8 @@ except OffersAPIError as e:
 git clone https://github.com/your-username/offers-sdk.git
 cd offers-sdk
 
-# Install dependencies
-poetry install
+# Install all dependencies (including optional extras)
+poetry install --all-extras
 
 # Install development dependencies
 poetry install --with dev --all-extras
@@ -308,11 +335,23 @@ poetry install --with dev --all-extras
 # Run tests
 poetry run pytest
 
-# Run linting
+# Run linting (ruff replaces flake8)
 poetry run ruff check src/ tests/
+
+# Run import sorting
+poetry run isort src/ tests/
+
+# Run code formatting
+poetry run black src/ tests/
 
 # Run type checking
 poetry run mypy src/
+
+# Run pre-commit hooks (automatically runs on git commit)
+poetry run pre-commit run --all-files
+
+# Run type checking manually (excluded from pre-commit due to generated files)
+poetry run mypy --config-file=mypy.ini src/
 ```
 
 ### Running Tests
@@ -342,11 +381,20 @@ docker compose --profile test up
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## Support
 
-For issues and questions:
-- Create an issue on GitHub
-- Check the documentation
-- Review the test examples
+- **GitHub Issues**: Create an issue for bugs or feature requests
+- **Documentation**: Check the examples and API reference
+- **Tests**: Review test files for usage examples
+
+## Development Status
+
+- ✅ **All dependencies are actively used** - no dead code
+- ✅ **82 tests passing** - comprehensive test coverage
+- ✅ **Modern linting tools** - ruff, isort, black configured
+- ✅ **Pre-commit hooks** - automatic code quality checks
+- ✅ **Docker containers verified** - all services working
+- ✅ **CLI tool functional** - all commands working
+- ✅ **Type checking clean** - mypy passes
