@@ -7,6 +7,7 @@ services:
     environment:
       - OFFERS_API_REFRESH_TOKEN=${OFFERS_API_REFRESH_TOKEN:-test-token}
       - OFFERS_API_BASE_URL=${OFFERS_API_BASE_URL:-https://python.exercise.applifting.cz}
+      - PYTHONPATH=/app/src
     volumes:
       - ./tests:/app/tests:ro
       - ./src:/app/src:ro
@@ -14,32 +15,7 @@ services:
     profiles:
       - test
 
-  demo:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: offers-sdk-demo
-    environment:
-      - OFFERS_API_REFRESH_TOKEN=${OFFERS_API_REFRESH_TOKEN:-demo-token}
-      - OFFERS_API_BASE_URL=${OFFERS_API_BASE_URL:-https://python.exercise.applifting.cz}
-    command: >
-      poetry run python -c "
-      import asyncio
-      from offers_sdk import OffersClient, OffersAPISettings
-      async def demo():
-          print('Offers SDK Demo')
-          print('=' * 50)
-          settings = OffersAPISettings(refresh_token='demo-token', base_url='https://python.exercise.applifting.cz')
-          client = OffersClient(settings)
-          print('SDK initialized successfully')
-          print(f'SDK Version: {client.__class__.__module__}')
-          print(f'Transport: {client.transport.__class__.__name__}')
-          print(f'Auth Manager: {client.auth_manager.__class__.__name__}')
-          print('\nSDK is ready for use!')
-          await client.aclose()
-      asyncio.run(demo())"
-    profiles:
-      - demo
+
 
   production:
     build:
@@ -49,22 +25,8 @@ services:
     environment:
       - OFFERS_API_REFRESH_TOKEN=${OFFERS_API_REFRESH_TOKEN}
       - OFFERS_API_BASE_URL=${OFFERS_API_BASE_URL:-https://python.exercise.applifting.cz}
-    command: >
-      poetry run python -c "
-      import asyncio
-      import os
-      from offers_sdk import OffersClient, OffersAPISettings
-      async def main():
-          refresh_token = os.getenv('OFFERS_API_REFRESH_TOKEN', 'demo-token')
-          base_url = os.getenv('OFFERS_API_BASE_URL', 'https://python.exercise.applifting.cz')
-          settings = OffersAPISettings(refresh_token=refresh_token, base_url=base_url)
-          client = OffersClient(settings)
-          print(f'Offers SDK initialized')
-          print(f'Base URL: {base_url}')
-          print(f'Transport: {client.transport.__class__.__name__}')
-          await client.aclose()
-          print('Client closed successfully')
-      asyncio.run(main())"
+      - PYTHONPATH=/app/src
+    command: poetry run python -c "from offers_sdk import OffersClient, OffersAPISettings; print('Production environment ready!')"
     profiles:
       - production
 
@@ -93,6 +55,7 @@ services:
     environment:
       - OFFERS_API_REFRESH_TOKEN=${OFFERS_API_REFRESH_TOKEN:-cli-token}
       - OFFERS_API_BASE_URL=${OFFERS_API_BASE_URL:-https://python.exercise.applifting.cz}
+      - PYTHONPATH=/app/src
     volumes:
       - .:/app
     working_dir: /app

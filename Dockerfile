@@ -9,16 +9,18 @@ RUN pip install --no-cache-dir poetry
 # Set working directory
 WORKDIR /app
 
-# Copy dependency declarations and source code first
+# Copy dependency declarations first
 COPY pyproject.toml poetry.lock* README.md /app/
+
+# Copy source code first for poetry install
 COPY src/ /app/src/
 
-# Install only required dependencies (excluding dev)
+# Install dependencies with CLI support
 RUN poetry config virtualenvs.create false \
- && poetry install --only main,cli,cache,aiohttp,requests
+ && poetry install --all-extras
 
 # Copy the rest of the source code
 COPY . /app
 
-# Define CLI entrypoint (set in pyproject.toml -> [project.scripts])
-ENTRYPOINT ["offers-cli"]
+# Set Python path
+ENV PYTHONPATH=/app/src

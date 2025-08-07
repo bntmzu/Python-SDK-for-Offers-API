@@ -168,3 +168,5 @@ class AuthManager:
                         )
 
                 raise AuthError("Failed to get access token after retries")
+        
+        raise AuthError("Failed to get access token after retries")

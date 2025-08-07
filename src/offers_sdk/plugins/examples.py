@@ -22,7 +22,7 @@ class LoggingPlugin(RequestPlugin, ResponsePlugin):
 
     def __init__(self, log_level: int = logging.INFO):
         self.log_level = log_level
-        self._start_time = None
+        self._start_time: Optional[float] = None
 
     async def process_request(
         self,
@@ -85,7 +85,7 @@ class RateLimitPlugin(ResponsePlugin):
 
     def __init__(self, requests_per_minute: int = 60):
         self.requests_per_minute = requests_per_minute
-        self._last_request_time = 0
+        self._last_request_time: float = 0.0
 
     async def process_response(self, response: UnifiedResponse) -> UnifiedResponse:
         """Handle rate limiting based on response headers."""
@@ -127,9 +127,9 @@ class MetricsPlugin(ResponsePlugin):
     """
 
     def __init__(self):
-        self.request_count = 0
-        self.error_count = 0
-        self.total_response_time = 0
+        self.request_count: int = 0
+        self.error_count: int = 0
+        self.total_response_time: float = 0.0
 
     async def process_response(self, response: UnifiedResponse) -> UnifiedResponse:
         """Collect metrics from response."""

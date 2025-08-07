@@ -209,11 +209,20 @@ offers-cli test-auth
 # Start development environment
 docker compose --profile dev up
 
-# Run tests
+# Run tests in development environment
+docker compose --profile dev-test up
+
+# Interactive development shell
+docker compose --profile dev-shell up
+
+# Run tests in production environment
 docker compose --profile test up
 
 # Use CLI in container
 docker compose --profile cli up
+
+# Production environment
+docker compose --profile production up
 ```
 
 ### Production Build
@@ -225,6 +234,18 @@ docker build -t offers-sdk .
 # Run production container
 docker run -e OFFERS_API_REFRESH_TOKEN=your_token offers-sdk
 ```
+
+### Dockerfile Differences
+
+**Dockerfile** (Production):
+- Minimal dependencies: `poetry install --all-extras`
+- Includes CLI support
+- Optimized for production use
+
+**Dockerfile.dev** (Development):
+- Full development environment: `poetry install --with dev --all-extras`
+- Includes testing tools: pytest, mypy, black, pre-commit
+- Interactive development support
 
 ## API Reference
 
@@ -340,11 +361,10 @@ docker compose --profile test up
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## Support
 
-For issues and questions:
-- Create an issue on GitHub
-- Check the documentation
-- Review the test examples
+- **GitHub Issues**: Create an issue for bugs or feature requests
+- **Documentation**: Check the examples and API reference
+- **Tests**: Review test files for usage examples

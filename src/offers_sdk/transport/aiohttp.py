@@ -11,7 +11,7 @@ class AiohttpTransport(BaseTransport):
 
     def __init__(self, timeout: float = 30.0):
         self._timeout = timeout
-        self._session = None
+        self._session: Optional[aiohttp.ClientSession] = None
 
     async def request(
         self,
@@ -29,6 +29,7 @@ class AiohttpTransport(BaseTransport):
                 timeout=aiohttp.ClientTimeout(total=self._timeout)
             )
 
+        timeout_obj = aiohttp.ClientTimeout(total=timeout or self._timeout)
         async with self._session.request(
             method=method,
             url=url,
@@ -36,9 +37,10 @@ class AiohttpTransport(BaseTransport):
             params=params,
             json=json,
             data=data,
-            timeout=timeout or self._timeout,
+            timeout=timeout_obj,
         ) as response:
             return UnifiedResponse(response)
 
     async def close(self):
-        await self._session.close()
+        if self._session:
+            await self._session.close()
