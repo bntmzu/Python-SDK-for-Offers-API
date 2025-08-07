@@ -1,4 +1,13 @@
-# token_store.py
+"""
+Token storage abstraction for Offers SDK.
+
+This module provides token storage interfaces for persisting access tokens
+between SDK sessions. The FileTokenStore implementation saves tokens to disk
+with automatic expiration handling.
+
+Tokens are stored with expiration timestamps to ensure they're refreshed
+when needed, providing seamless authentication across application restarts.
+"""
 
 import json
 import logging

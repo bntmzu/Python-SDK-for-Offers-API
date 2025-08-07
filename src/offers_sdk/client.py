@@ -185,14 +185,18 @@ class OffersClient:
 
         # === MIDDLEWARE: before request ===
         for mw in self.middlewares:
-            await mw.on_request(
-                method="POST",
-                url=url,
-                headers=headers,
-                params=None,
-                json=product.to_dict(),
-                data=None,
-            )
+            try:
+                await mw.on_request(
+                    method="POST",
+                    url=url,
+                    headers=headers,
+                    params=None,
+                    json=product.to_dict(),
+                    data=None,
+                )
+            except Exception as e:
+                # Log middleware errors but don't fail the request
+                logger.warning(f"Middleware {type(mw).__name__} on_request failed: {e}")
 
         # === PLUGINS: process request ===
         (
@@ -229,7 +233,13 @@ class OffersClient:
 
             # === MIDDLEWARE: after response ===
             for mw in self.middlewares:
-                await mw.on_response(response)
+                try:
+                    await mw.on_response(response)
+                except Exception as e:
+                    # Log middleware errors but don't fail the request
+                    logger.warning(
+                        f"Middleware {type(mw).__name__} on_response failed: {e}"
+                    )
 
             if response.status_code == 201:
                 return RegisterProductResponse(**await response.json())
@@ -297,14 +307,18 @@ class OffersClient:
         headers = {"Bearer": access_token}
 
         for mw in self.middlewares:
-            await mw.on_request(
-                method="GET",
-                url=url,
-                headers=headers,
-                params=None,
-                json=None,
-                data=None,
-            )
+            try:
+                await mw.on_request(
+                    method="GET",
+                    url=url,
+                    headers=headers,
+                    params=None,
+                    json=None,
+                    data=None,
+                )
+            except Exception as e:
+                # Log middleware errors but don't fail the request
+                logger.warning(f"Middleware {type(mw).__name__} on_request failed: {e}")
 
         # === PLUGINS: process request ===
         (
@@ -338,7 +352,13 @@ class OffersClient:
             response = await self.plugin_manager.process_response(response)
 
             for mw in self.middlewares:
-                await mw.on_response(response)
+                try:
+                    await mw.on_response(response)
+                except Exception as e:
+                    # Log middleware errors but don't fail the request
+                    logger.warning(
+                        f"Middleware {type(mw).__name__} on_response failed: {e}"
+                    )
 
             if response.status_code == 200:
                 return [

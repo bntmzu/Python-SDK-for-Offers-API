@@ -7,11 +7,18 @@ performed by the `OffersClient`.
 
 Any class that implements this interface can be passed to the client as a middleware.
 
-Typical use cases:
-- Logging (see: LoggingMiddleware)
-- Metrics collection
-- Header injection (e.g., trace IDs)
-- Cache invalidation (e.g., CacheClearMiddleware)
+Current implementations:
+- Logging (see: LoggingMiddleware) - logs requests/responses with timing
+- Cache invalidation (see: CacheClearMiddleware) - clears cache after product registration
+
+Planned implementations:
+- Metrics collection - for monitoring and observability
+- Rate limiting - for API call throttling
+- Retry logic - for automatic retry with backoff
+- Header injection - for trace IDs and correlation
+
+The middleware class was extracted separately to enable easy addition of new
+cross-cutting concerns without modifying the core client logic.
 """
 
 from typing import Any
@@ -34,9 +41,10 @@ class Middleware(Protocol):
         Called before the HTTP request is executed.
 
         This can be used to:
-        - Log request details
-        - Add or modify headers
-        - Record metrics
+        - Log request details (current: LoggingMiddleware)
+        - Add or modify headers (planned: HeaderInjectionMiddleware)
+        - Record metrics (planned: MetricsMiddleware)
+        - Rate limiting checks (planned: RateLimitMiddleware)
         - Cancel or abort execution (by raising)
 
         Args:
@@ -53,10 +61,11 @@ class Middleware(Protocol):
         Called after the HTTP response is received (but before it's parsed).
 
         This can be used to:
-        - Log response status and timing
-        - Extract metrics
+        - Log response status and timing (current: LoggingMiddleware)
+        - Extract metrics (planned: MetricsMiddleware)
         - Modify or inspect the response
-        - Perform cache invalidation or alerts
+        - Perform cache invalidation (current: CacheClearMiddleware)
+        - Handle retry logic (planned: RetryMiddleware)
 
         Args:
             response (UnifiedResponse): Unified response object from transport layer

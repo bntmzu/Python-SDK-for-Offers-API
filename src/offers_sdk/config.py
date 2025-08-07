@@ -1,3 +1,13 @@
+"""
+Configuration management for Offers SDK.
+
+This module provides OffersAPISettings class that handles all SDK configuration
+with support for environment variables, .env files, and sensible defaults.
+
+Environment variables are automatically loaded with OFFERS_API_ prefix.
+Example: OFFERS_API_REFRESH_TOKEN=your_token
+"""
+
 from pathlib import Path
 
 from pydantic import Field
@@ -6,6 +16,23 @@ from pydantic_settings import SettingsConfigDict
 
 
 class OffersAPISettings(BaseSettings):
+    """
+    Configuration settings for Offers SDK with environment variable support.
+
+    This class automatically loads configuration from:
+    - Environment variables (with OFFERS_API_ prefix)
+    - .env files
+    - Default values for optional settings
+
+    Example:
+        # From environment
+        export OFFERS_API_REFRESH_TOKEN=your_token
+        export OFFERS_API_TIMEOUT=60.0
+
+        # In code
+        settings = OffersAPISettings()
+    """
+
     refresh_token: str = Field(..., description="Refresh token for authentication")
     base_url: str = "https://python.exercise.applifting.cz"
     timeout: float = 30.0

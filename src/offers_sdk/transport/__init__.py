@@ -1,3 +1,16 @@
+"""
+Transport layer for Offers SDK.
+
+This module provides a unified transport interface that abstracts different HTTP clients.
+The SDK supports multiple transport backends for flexibility:
+
+- httpx: Modern async HTTP client (default, recommended)
+- aiohttp: Async HTTP client with advanced features
+- requests: Sync HTTP client wrapped in async interface
+
+All transports implement the same interface, making them interchangeable.
+"""
+
 from .httpx import HttpxTransport
 
 

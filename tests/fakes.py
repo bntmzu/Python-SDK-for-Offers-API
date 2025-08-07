@@ -1,3 +1,11 @@
+"""
+Test utilities and mock objects for Offers SDK.
+
+This module provides mock transport implementations and fake response objects
+for testing the SDK without making real HTTP requests. These utilities help
+isolate the SDK's business logic from external dependencies.
+"""
+
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 

@@ -1,3 +1,18 @@
+"""
+Aiohttp transport implementation for Offers SDK.
+
+This module provides AiohttpTransport, an alternative async HTTP client for the SDK.
+Aiohttp is a mature async HTTP client with advanced features like connection pooling,
+automatic retries, and comprehensive timeout handling.
+
+Features:
+- Full async/await support
+- Automatic connection pooling
+- Advanced timeout configuration
+- Built-in retry mechanisms
+- WebSocket support (if needed)
+"""
+
 from typing import Any
 
 import aiohttp

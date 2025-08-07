@@ -1,3 +1,17 @@
+"""
+Httpx transport implementation for Offers SDK.
+
+This module provides HttpxTransport, the default async HTTP client for the SDK.
+Httpx is a modern, fully-featured HTTP client with excellent async support.
+
+Features:
+- Full async/await support
+- Automatic connection pooling
+- Request/response streaming
+- Comprehensive timeout handling
+- Built-in retry capabilities
+"""
+
 from typing import Any
 
 import httpx
