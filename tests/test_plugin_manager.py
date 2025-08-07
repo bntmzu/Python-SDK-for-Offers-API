@@ -8,9 +8,10 @@ This module tests the core PluginManager class including:
 - Error handling
 """
 
-import pytest
+from typing import Any
 from unittest.mock import MagicMock
-from typing import Dict, Any, Optional
+
+import pytest
 
 from offers_sdk.plugins import PluginManager, RequestPlugin, ResponsePlugin
 from offers_sdk.transport.base import UnifiedResponse
@@ -21,17 +22,17 @@ class MockRequestPlugin(RequestPlugin):
 
     def __init__(self, name: str = "mock"):
         self.name = name
-        self.processed_requests = []
+        self.processed_requests: list[dict[str, Any]] = []
 
     async def process_request(
         self,
         method: str,
         url: str,
-        headers: Dict[str, str],
-        params: Optional[Dict[str, Any]] = None,
+        headers: dict[str, str],
+        params: dict[str, Any] | None = None,
         json: Any = None,
         data: Any = None,
-    ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+    ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
         """Process request and record it."""
         self.processed_requests.append(
             {
@@ -55,7 +56,7 @@ class MockResponsePlugin(ResponsePlugin):
 
     def __init__(self, name: str = "mock"):
         self.name = name
-        self.processed_responses = []
+        self.processed_responses: list[dict[str, Any]] = []
 
     async def process_response(self, response: UnifiedResponse) -> UnifiedResponse:
         """Process response and record it."""
@@ -208,7 +209,7 @@ class TestPluginManager:
         mock_response.text = "OK"
         unified_response = UnifiedResponse(mock_response)
 
-        result = await manager.process_response(unified_response)
+        await manager.process_response(unified_response)
 
         # Check that both plugins processed the response
         assert len(plugin1.processed_responses) == 1
@@ -297,11 +298,11 @@ class TestPluginErrorHandling:
             self,
             method: str,
             url: str,
-            headers: Dict[str, str],
-            params: Optional[Dict[str, Any]] = None,
+            headers: dict[str, str],
+            params: dict[str, Any] | None = None,
             json: Any = None,
             data: Any = None,
-        ) -> tuple[str, str, Dict[str, str], Optional[Dict[str, Any]], Any, Any]:
+        ) -> tuple[str, str, dict[str, str], dict[str, Any] | None, Any, Any]:
             raise Exception("Plugin error")
 
     class FailingResponsePlugin(ResponsePlugin):

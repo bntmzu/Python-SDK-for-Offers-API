@@ -9,19 +9,21 @@ This module tests the middleware system including:
 - Error handling in middleware
 """
 
+import logging
 import time
-import pytest
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
-from httpx import Response, Request
 
-from offers_sdk.middleware import Middleware
-from offers_sdk.logging_middleware import LoggingMiddleware
+import pytest
+from httpx import Request, Response
+
 from offers_sdk.cache_clear_middleware import CacheClearMiddleware
 from offers_sdk.config import OffersAPISettings
 from offers_sdk.generated.models import RegisterProductResponse
+from offers_sdk.logging_middleware import LoggingMiddleware
+from offers_sdk.middleware import Middleware
 from offers_sdk.transport.base import UnifiedResponse
 from tests.fakes import MockTransport
-import logging
 
 
 class SpyMiddleware(Middleware):
@@ -45,8 +47,8 @@ class SpyMiddleware(Middleware):
         url: str,
         headers: dict,
         params: dict | None,
-        json: any,
-        data: any,
+        json: Any,
+        data: Any,
     ) -> None:
         """Record request data."""
         self.requests.append(
@@ -150,7 +152,8 @@ async def test_register_product_middleware():
     - Request and response data is preserved
     - No data loss in middleware chain
     """
-    spy = SpyMiddleware()
+    # Create spy middleware for tracking calls
+    spy = SpyMiddleware()  # noqa: F841
 
     async def handler(request: Request):
         """Mock handler for product registration."""
@@ -354,8 +357,9 @@ async def test_multiple_middleware_chain():
     - Request and response data flows through all middleware
     - No data corruption in middleware chain
     """
-    spy1 = SpyMiddleware()
-    spy2 = SpyMiddleware()
+    # Create spy middleware instances for tracking calls
+    spy1 = SpyMiddleware()  # noqa: F841
+    spy2 = SpyMiddleware()  # noqa: F841
 
     async def handler(request: Request):
         """Mock handler for testing middleware chain."""
@@ -429,7 +433,8 @@ async def test_middleware_with_different_http_methods():
     - Request data is preserved for all methods
     - Response data is preserved for all methods
     """
-    spy = SpyMiddleware()
+    # Create spy middleware for tracking calls
+    spy = SpyMiddleware()  # noqa: F841
 
     async def handler(request: Request):
         """Mock handler that returns different responses based on method."""
