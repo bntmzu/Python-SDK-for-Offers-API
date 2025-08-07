@@ -1,3 +1,14 @@
+"""
+Requests transport implementation for Offers SDK.
+
+This module provides RequestsTransport, a compatibility layer that wraps the
+synchronous requests library in an async interface. This allows users to use
+the familiar requests library while maintaining the SDK's async-first design.
+
+Note: This transport runs requests calls in a thread pool to avoid blocking
+the event loop. For better performance, consider using httpx or aiohttp.
+"""
+
 import asyncio
 from typing import Any
 

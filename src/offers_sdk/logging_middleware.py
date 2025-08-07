@@ -1,3 +1,17 @@
+"""
+Logging middleware for Offers SDK.
+
+This module provides LoggingMiddleware, a built-in middleware that logs
+all HTTP requests and responses with timing information. Useful for
+debugging, monitoring, and understanding SDK behavior.
+
+Features:
+- Request logging with method, URL, headers, and payload
+- Response logging with status code and timing
+- Automatic timing measurement
+- Configurable log levels
+"""
+
 import logging
 import time
 

@@ -1,3 +1,20 @@
+"""
+Command-line interface for Offers SDK.
+
+This module provides a comprehensive CLI for testing and managing the Offers SDK.
+All commands use async operations under the hood and provide detailed logging.
+
+Available commands:
+- register: Register a single product
+- register-batch: Register multiple products from JSON file
+- get-offers: Retrieve offers for a product
+- get-offers-cached: Retrieve offers with caching
+- clear-cache: Clear the token cache
+- debug-token: Diagnose current access token
+- test-auth: Test authentication with cache
+- test-auth-no-cache: Test authentication without cache
+"""
+
 import asyncio
 import json
 import logging

@@ -1,3 +1,15 @@
+"""
+Base transport layer for Offers SDK.
+
+This module defines the core transport abstractions that allow the SDK
+to work with different HTTP clients seamlessly. The BaseTransport class
+provides a unified interface, while UnifiedResponse handles differences
+between sync and async HTTP client responses.
+
+This abstraction enables easy switching between httpx, aiohttp, and requests
+without changing the SDK's core logic.
+"""
+
 import asyncio
 from typing import Any
 
