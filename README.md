@@ -25,10 +25,10 @@ Async-first Python SDK for the Offers API with comprehensive features including 
 
 ```bash
 # Using Poetry (recommended)
-poetry install --all-extras
+poetry install
 
 # Install with development tools
-poetry install --with dev --all-extras
+poetry install --extras dev
 
 # Note: This package is not yet published to PyPI
 # For production use, install from source or use Docker
@@ -142,12 +142,13 @@ client = OffersClient(settings, middlewares=middlewares)
 
 ```python
 from offers_sdk import OffersClient, OffersAPISettings
-from offers_sdk.plugins import PluginManager, LoggingPlugin, RetryPlugin
+from offers_sdk.plugins import PluginManager
+from offers_sdk.plugins.examples import DataValidationPlugin, ResponseEnrichmentPlugin
 
 # Create plugin manager
 plugin_manager = PluginManager()
-plugin_manager.add_plugin(LoggingPlugin())
-plugin_manager.add_plugin(RetryPlugin(max_retries=3))
+plugin_manager.add_request_plugin(DataValidationPlugin())
+plugin_manager.add_response_plugin(ResponseEnrichmentPlugin())
 
 # Use with client
 client = OffersClient(
@@ -243,13 +244,13 @@ docker run -e OFFERS_API_REFRESH_TOKEN=your_token offers-sdk
 ### Dockerfile Differences
 
 **Dockerfile** (Production):
-- Minimal dependencies: `poetry install --all-extras`
+- Minimal dependencies: `poetry install --only main`
 - Includes CLI support
 - Optimized for production use
-- All optional extras installed (aiohttp, requests, aiocache, click)
+- Only core dependencies installed
 
 **Dockerfile.dev** (Development):
-- Full development environment: `poetry install --with dev --all-extras`
+- Full development environment: `poetry install --extras dev`
 - Includes testing tools: pytest, mypy, black, ruff, isort, pre-commit
 - Interactive development support
 
@@ -325,10 +326,10 @@ git clone https://github.com/your-username/offers-sdk.git
 cd offers-sdk
 
 # Install all dependencies (including optional extras)
-poetry install --all-extras
+poetry install
 
 # Install development dependencies
-poetry install --with dev --all-extras
+poetry install --extras dev
 
 # Run tests
 poetry run pytest

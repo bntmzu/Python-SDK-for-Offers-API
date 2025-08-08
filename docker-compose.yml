@@ -2,7 +2,7 @@ services:
   test:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     image: offers-sdk-test
     environment:
       - OFFERS_API_REFRESH_TOKEN=${OFFERS_API_REFRESH_TOKEN:-test-token}
@@ -41,7 +41,6 @@ services:
       - PYTHONPATH=/app/src
     volumes:
       - .:/app
-      - /app/.venv
     working_dir: /app
     command: poetry run python -c "from offers_sdk import OffersClient, OffersAPISettings; print('Development environment ready!')"
     profiles:

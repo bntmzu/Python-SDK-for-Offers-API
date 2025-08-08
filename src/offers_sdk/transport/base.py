@@ -27,6 +27,11 @@ class UnifiedResponse:
             response.text if hasattr(response, "text") else str(response.content)
         )
         self.headers = response.headers if hasattr(response, "headers") else {}
+        # Plugin-specific attributes
+        self._enriched_data: Any | None = None
+        self._business_insights: Any | None = None
+        self._transformed_data: Any | None = None
+        self._compliant_data: Any | None = None
 
     async def json(self):
         """
@@ -68,3 +73,10 @@ class BaseTransport:
         raise NotImplementedError(
             "Transport implementations must override this method."
         )
+
+    async def close(self) -> None:
+        """
+        Close transport resources.
+        Override this method in transport implementations.
+        """
+        pass

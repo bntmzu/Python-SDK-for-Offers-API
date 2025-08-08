@@ -33,7 +33,9 @@ class OffersAPISettings(BaseSettings):
         settings = OffersAPISettings()
     """
 
-    refresh_token: str = Field(..., description="Refresh token for authentication")
+    refresh_token: str = Field(
+        default="test-token", description="Refresh token for authentication"
+    )
     base_url: str = "https://python.exercise.applifting.cz"
     timeout: float = 30.0
     transport: str = "httpx"  # default, can be 'aiohttp' or 'requests'
