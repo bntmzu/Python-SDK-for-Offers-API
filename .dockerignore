@@ -52,8 +52,8 @@ coverage.xml
 Thumbs.db
 desktop.ini
 
-# OpenAPI client (generated)
-#src/offers_sdk/generated/
+# OpenAPI client (generated) - KEEP THIS FOR DOCKER
+# src/offers_sdk/generated/
 
 # Jupyter/IPython
 *.ipynb_checkpoints/

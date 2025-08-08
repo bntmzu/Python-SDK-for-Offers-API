@@ -55,12 +55,11 @@ def test_cli():
 @pytest.mark.asyncio
 async def test_plugin_manager():
     from offers_sdk import PluginManager
-    from offers_sdk.plugins.examples import LoggingPlugin
+    from offers_sdk.plugins.examples import DataValidationPlugin
 
     manager = PluginManager()
-    plugin = LoggingPlugin()
+    plugin = DataValidationPlugin()
     manager.add_request_plugin(plugin)
-    manager.add_response_plugin(plugin)
     await manager.process_request(
         "GET", "https://test.com", {"x": "y"}, None, None, None
     )

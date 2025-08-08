@@ -15,9 +15,10 @@ COPY pyproject.toml poetry.lock* README.md /app/
 # Copy source code first for poetry install
 COPY src/ /app/src/
 
-# Install dependencies with CLI support
+# Install only production dependencies (no dev tools)
 RUN poetry config virtualenvs.create false \
- && poetry install --all-extras
+ && poetry install --only main \
+ && poetry config virtualenvs.in-project false
 
 # Copy the rest of the source code
 COPY . /app
